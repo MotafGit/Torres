@@ -1,0 +1,222 @@
+﻿@using Torres.Data
+@using System.Collections.Generic
+@using System.Data
+@using System.Threading.Tasks
+@using System.ComponentModel.DataAnnotations
+
+@page "/encomendas"
+
+@inject OrderController OrderController;
+
+<PageTitle>Encomendas</PageTitle>
+
+
+<div>
+	<div class="d-flex flex-wrap justify-content-around">
+		<div class="pt-2">
+			<button class="cancelButtonStyle" @onclick=@(() => novaEncomenda())>Nova encomenda</button>
+		</div>
+		<div class="pt-2">
+			<select 
+			@onchange="@(async(e) => {if(e.Value.Equals("0")){encomendas = await OrderController.GetEncomendasAsync();} else{encomendas = await OrderController.getEncomendasByEstado(Convert.ToInt16(e.Value));}})" style="height:30px;border-radius:16px; padding:1px 4px;">
+				<option value="0"> Escolha um estado </option>
+				@foreach (var states in estados)
+				{
+					<option value="@states.Status"> @states.TipoEstado</option>
+				}
+			</select>
+		</div>
+		<div class="pt-2">
+
+			<input placeholder="filtra por nome" @bind=filterByName @oninput="@(async(e) => {Console.WriteLine(e.Value); encomendas = await OrderController.filterByName(e.Value.ToString());} )" />
+		</div>
+	</div>
+
+	<table class="table">
+		<thead>
+			<tr>
+				<th>Nome</th>
+				<th>Cliente</th>
+				<th>Morada</th>
+				<th>Estado</th>
+				<th>Data Criação</th>
+				<th></th>
+
+			</tr>
+		</thead>
+		<tbody>
+
+			@if (detalheIsOpen == true){
+				<EncomendasDetalhe estados="estados" isEditing="editEncomenda" encomenda="encomendaToChild" isOpen="detalheIsOpen" closeDetalhe="@(() => {detalheIsOpen = false;})" EncomendaEditadaComSucesso="@(async(e) => {encomendas = await OrderController.GetEncomendasAsync();encomendaToChild=e;editEncomenda = false;})"></EncomendasDetalhe>
+			}
+
+			@{
+				foreach (var enc in encomendas)
+				{
+
+					<tr style="cursor:pointer;" class="encomendasRows">
+						<th style="align-content:center;" @onclick=@(() => {detalheIsOpen = false;editEncomenda = false;OpenDetalhe(enc);})>@enc.EncomendaName</th>
+						<th style="align-content:center" @onclick=@(() => {detalheIsOpen = false;editEncomenda = false;OpenDetalhe(enc);})>@enc.CustomerName</th>
+						<th style="align-content:center;text-overflow: ellipsis;overflow: hidden;white-space: nowrap;max-width: 300px;" @onclick=@(() => {detalheIsOpen = false;editEncomenda = false;OpenDetalhe(enc);})>@enc.Address</th>
+						<th style="align-content:center" @onclick =@(() => {detalheIsOpen = false;editEncomenda = false;OpenDetalhe(enc);})>@getStatusDescription(enc.Status)</th>
+						<th style="align-content:center" @onclick=@(() => {detalheIsOpen = false;editEncomenda = false;OpenDetalhe(enc);})>@enc.CreatedAt</th>
+						<th style="min-width:50px;align-content:center;position: sticky;z-index: 1600;right: 0;background:inherit">
+							<span @onclick=@(() => {editEncomenda=true; OpenDetalhe(enc);}) style="color:darkorange">  <i class="fa fa-edit"></i> </span>
+							<span @onclick="@(() => {detalheIsOpen = false;openDeletePopUp = true;encomendaToDelete = enc.ID;encomendaNameToDelete = enc.EncomendaName;})" style="color:red"> <i class="fa fa-trash"></i></span>
+
+						</th>
+					</tr>
+				}
+
+
+			}
+		</tbody>
+
+	</table>
+
+
+	@{if(criaEncomenda == true){
+			<div class="d-flex justify-content-center align-items-center h-100 popUpParent" style="width:calc(100% + 210px);position:fixed; top:0; left:0; z-index:3000">
+
+			<EditForm Model="@encomendaNova" OnValidSubmit="@HandleValidSubmit">
+				<DataAnnotationsValidator />
+
+				<div class="novaEncomendaPopUp" style="border:1px solid black; width:500px;background:white;">
+					<div style="height:50px; background:#003d2c">
+						<div style="text-align: center;height: inherit;place-content: center;font-size: 26px;color: #fdbe30;">
+							Nova Encomenda
+						</div>
+
+					</div>
+
+					<div class="d-flex flex-column justify-content-around" style="padding:15px; height:500px;">
+						<div class="d-flex flex-column">
+							<label>
+								Nome da Encomenda
+							</label>
+							<input @bind-value="encomendaNova.EncomendaName" />
+							<ValidationMessage For="@(() => encomendaNova.EncomendaName)" />
+						</div>
+						<div class="d-flex flex-column">
+							<label>
+								Nome do Cliente
+							</label>
+							<input @bind-value="encomendaNova.CustomerName" />
+							<ValidationMessage For="@(() => encomendaNova.CustomerName)" />
+						</div>
+						<div class="d-flex flex-column">
+							<label>
+								Morada
+							</label>
+							<input @bind-value="encomendaNova.Address" />
+							<ValidationMessage For="@(() => encomendaNova.Address)" />
+						</div>
+
+						<div class="d-flex flex-column">
+							<label>
+								Estado
+							</label>
+							<select @onchange="@((e) => {encomendaNova.Status= Convert.ToInt16(e.Value);})" style="height:30px;border-radius:16px; padding:1px 4px;">
+								<option value="0"> Escolha um estado </option>
+								@foreach(var states in estados){
+									<option value="@states.Status"> @states.TipoEstado</option>
+								}
+							</select>
+							<ValidationMessage For="@(() => encomendaNova.Status)" />
+						</div>
+						<div class="d-flex flex-column">
+							<label>
+								Descrição
+							</label>
+							<textarea @bind="encomendaNova.Descricao" style="max-height: 150px" />
+							<ValidationMessage For="@(() => encomendaNova.Descricao)" />
+						</div>
+					</div>
+					<div class="d-flex justify-content-end pb-3"> 
+						<div class="pe-3">
+							<button class="saveButtonStyle">
+								Guardar
+							</button>
+						</div>
+
+						<div class="pe-3">
+							<button class="cancelButtonStyle" @onclick=@(() => {criaEncomenda = false; encomendaNova = new();})>
+								Cancelar
+							</button>
+						</div>
+					</div>
+				</div>
+			</EditForm>
+			</div>
+		}}
+
+	@if (openDeletePopUp == true){
+		<Torres.Components.popUp.DeletePopUp 
+		toDisplayPreArg ="a encomenda "
+		toDisplayArg="@encomendaNameToDelete"
+		delete="@(async (e) => {
+		if(e) 
+			{
+				await OrderController.RemoveEncomendaByIdAsync(encomendaToDelete);
+				encomendas = await OrderController.GetEncomendasAsync();
+				openDeletePopUp = false;
+			}
+			else {openDeletePopUp = false;} })"
+		/>
+	}
+
+
+</div>
+
+
+@code {
+
+	List<Order> encomendas = new();
+	private bool detalheIsOpen = false;
+	private bool criaEncomenda = false;
+	private bool openDeletePopUp = false;
+	private bool editEncomenda = false;
+	private Order encomendaToChild = new();
+	private string filterByName = "";
+	private int? encomendaToDelete = null;
+	private string encomendaNameToDelete = "";
+	private Order encomendaNova = new();
+	List <EstadoEncomenda> estados = new ();
+
+
+	protected override async Task OnInitializedAsync()
+	{
+		encomendas = await OrderController.GetEncomendasAsync();
+		estados = await OrderController.GetEstadosEncomendaAsync();
+	}
+
+	private void OpenDetalhe (Order encomenda)
+	{
+
+		encomendaToChild = encomenda;
+		detalheIsOpen = true;
+	}
+
+	private void novaEncomenda()
+	{
+		detalheIsOpen = false;
+		criaEncomenda = true;
+	}
+
+
+	private async void HandleValidSubmit()
+	{
+
+		encomendaNova.CreatedAt = DateTime.Now;
+		await OrderController.AddEncomendaAsync(encomendaNova);
+		encomendas = await OrderController.GetEncomendasAsync();
+		criaEncomenda = false; 
+		encomendaNova = new();
+		StateHasChanged();
+	}
+
+	private string? getStatusDescription ( int status){
+		return estados.Where(x => x.Status == status).Select(z => z.TipoEstado).FirstOrDefault();  // retorna a descricao do estado
+	}
+
+}

@@ -1,0 +1,37 @@
+﻿body {
+}
+
+
+.testacor{
+    color:blue;
+}
+
+.encomendaDetalheDrawer {
+    border-top-left-radius: 16px;
+    height: 100vh;
+    background: #f1f1f1;
+    width: 60%;
+    right: -3000px;
+    z-index: 2000;
+    position: fixed;
+    /* top: 114px;*/
+    transition: opacity 250ms, visibility 0s;
+    transition: right 0.7s ease; /* Animation */
+    border: 1px solid black;
+}
+
+    .encomendaDetalheDrawer.open {
+        right: 0px;
+    }
+
+@media only screen and (max-width: 1460px) {
+    .encomendaDetalheDrawer {
+        width: calc(100% - 270px);
+    }
+}
+
+@media only screen and (max-width: 734px) {
+    .encomendaDetalheDrawer {
+        width: 97%;
+    }
+}

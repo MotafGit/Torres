@@ -1,0 +1,35 @@
+﻿
+
+
+<div class="d-flex justify-content-center align-items-center h-100 popUpParent" style="width:calc(100% + 245px);position:fixed; top:0; left:0; z-index:3000">
+
+	<div class="d-flex flex-column p-3 justify-content-between deletePopUp" style="">
+
+		<div>Tem a certeza que quer apagar @toDisplayPreArg <strong>@toDisplayArg</strong>?</div>
+
+		<div class="d-flex justify-content-end">
+			<div class="pe-2">
+				<button class="deleteButtonStyle" @onclick=@(() =>{ delete.InvokeAsync(true);})>
+					Apagar
+				</button>
+			</div>
+			<div class="">
+				<button class="cancelButtonStyle " @onclick=@(() =>{ delete.InvokeAsync(false); })>
+					Cancelar
+				</button>
+			</div>
+		</div>
+	</div>
+
+</div>
+@code {
+	[Parameter]
+	public EventCallback<bool> delete { get; set; }
+
+	[Parameter]
+	public string toDisplayPreArg { get; set; }
+
+	[Parameter]
+	public string toDisplayArg { get; set; }
+
+}
