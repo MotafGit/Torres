@@ -9,12 +9,12 @@
 
 		<div class="d-flex justify-content-end">
 			<div class="pe-2">
-				<button class="deleteButtonStyle" @onclick=@(() =>{ delete.InvokeAsync(true);})>
+				<button class="deleteButtonStyle" @onclick=@(async() =>{ await delete.InvokeAsync(true);})>
 					Apagar
 				</button>
 			</div>
 			<div class="">
-				<button class="cancelButtonStyle " @onclick=@(() =>{ delete.InvokeAsync(false); })>
+				<button class="cancelButtonStyle " @onclick=@(async() =>{ await delete.InvokeAsync(false); })>
 					Cancelar
 				</button>
 			</div>

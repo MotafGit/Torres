@@ -2,9 +2,6 @@
 }
 
 
-.testacor{
-    color:blue;
-}
 
 .encomendaDetalheDrawer {
     border-top-left-radius: 16px;
@@ -20,9 +17,9 @@
     border: 1px solid black;
 }
 
-    .encomendaDetalheDrawer.open {
-        right: 0px;
-    }
+.encomendaDetalheDrawer.open {
+    right: 0px;
+}
 
 @media only screen and (max-width: 1460px) {
     .encomendaDetalheDrawer {

@@ -1,7 +1,10 @@
-﻿@using Torres.Data
+﻿@using Torres.Data.Controller
+@using Torres.Data
 @using System.ComponentModel.DataAnnotations
+@using Microsoft.Extensions.Options;
 
 @inject OrderController OrderController;
+@inject HttpClient Http;
 
 <div class="encomendaDetalheDrawer @(isOpen ? "open" : "")">
 
@@ -12,7 +15,7 @@
                 Detalhes da Encomenda
             </div>
             <div style="padding-right:28px; align-content: center;white-space:nowrap">
-                <span @onclick=@(() => {isEditing=true;}) class="pe-2" style="cursor:pointer;font-size:25px;color:darkorange">  <i class="fa fa-edit"></i> </span>
+                <span @onclick=@(async() => {await isEditingCB.InvokeAsync(true); }) class="pe-2" style="cursor:pointer;font-size:25px;color:darkorange">  <i class="fa fa-edit"></i> </span>
                 <span @onclick=@(() => {isOpen = false;closeDetalhe.InvokeAsync(false);}) class="pt-2" style="cursor:pointer; font-size:30px; background:#f1f1f1;"> <i class="fa fa-times"></i> </span>
             </div>
         </div>
@@ -71,7 +74,7 @@
                     @if (isEditing)
                     {
                         <select @onchange="@((e) => {encomendaEditada.Status= Convert.ToInt16(e.Value);})" value="@encomendaEditada.Status" style="height:30px;border-radius:16px; padding:1px 4px;min-width:350px;">
-                           
+
                             @foreach (var states in estados)
                             {
                                 <option value="@states.Status"> @states.TipoEstado</option>
@@ -115,11 +118,11 @@
                     </button>
                 </div>
 
-            <div class="pe-3">
-                <button class="cancelButtonStyle" @onclick=@(() => {isEditing=false;OnParametersSetAsync();})>
-                    Cancelar
-                </button>
-            </div>
+                <div class="pe-3">
+                    <button class="cancelButtonStyle" @onclick=@(() => {isEditing=false;OnParametersSetAsync();})>
+                        Cancelar
+                    </button>
+                </div>
             }
 
         </div>
@@ -132,8 +135,14 @@
     [Parameter]
     public EventCallback<bool> closeDetalhe { get; set; }
 
+    // [Parameter]
+    // public EventCallback<Order> EncomendaEditadaComSucesso { get; set; }
+
     [Parameter]
-    public EventCallback<Order> EncomendaEditadaComSucesso { get; set; }
+    public EventCallback<Order> SaveEditEncomenda { get; set; }
+
+    [Parameter]
+    public EventCallback<bool> isEditingCB { get; set; }
 
     [Parameter]
     public bool isOpen { get; set; }
@@ -149,12 +158,21 @@
 
     private Order encomendaEditada = new();
 
+    private readonly ApiSettings _apiSettings;
+
+    public EncomendasDetalhe(IOptions<ApiSettings> apiSettings)
+    {
+        _apiSettings = apiSettings.Value;
+    }
+
 
 
 
     protected override async Task OnParametersSetAsync()
     {
-        encomendaEditada = new()
+        if (encomendaEditada.ID == 0)
+        {
+            encomendaEditada = new()
             {
                 ID = encomenda.ID,
                 EncomendaName = encomenda.EncomendaName,
@@ -164,6 +182,9 @@
                 Descricao = encomenda.Descricao,
                 Status = encomenda.Status
             };
+
+        }
+
     }
 
 
@@ -172,12 +193,7 @@
     private async void HandleValidSubmit()
     {
         if (!isEditing){ return; }
-
-        // formulario sem erros
-        await OrderController.UpdateEncomendaAsync(encomendaEditada);
-        encomenda = await OrderController.GetEncomendaByIdAsync(encomendaEditada.ID);
-        await EncomendaEditadaComSucesso.InvokeAsync(encomenda);
-        StateHasChanged();
+        await SaveEditEncomenda.InvokeAsync(encomendaEditada);
     }
 
     private string? getStatusDescription(int status)

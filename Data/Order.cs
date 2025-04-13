@@ -27,6 +27,13 @@ namespace Torres.Data
 
         public DateTime CreatedAt { get; set; }
 
-    }
+        public Order()
+        {
+            Descricao = "";
+        }
+
+}
+
+
 
 }

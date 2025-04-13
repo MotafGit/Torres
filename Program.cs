@@ -1,5 +1,8 @@
+
 using Torres.Components;
-using Torres.Data;
+using Torres.Data.Controller;
+using Torres.Data.Services;
+
 
 namespace Torres
 {
@@ -7,12 +10,19 @@ namespace Torres
     {
         public static void Main(string[] args)
         {
+
+
+
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
             builder.Services.AddRazorComponents()
                 .AddInteractiveServerComponents();
+            builder.Services.AddHttpClient();
+            builder.Services.Configure<ApiSettings>(builder.Configuration.GetSection("ApiSettings"));
+            builder.Services.AddControllers();
             builder.Services.AddScoped<OrderController>();
+            builder.Services.AddScoped<OrderService>();
 
 
             var app = builder.Build();
@@ -25,6 +35,11 @@ namespace Torres
                 app.UseHsts();
             }
 
+            app.UseRouting(); // Add this line
+            app.UseAuthorization(); // Add this line if you have authorization
+
+            app.MapControllers(); // Add this line to map the API controllers
+
             app.UseHttpsRedirection();
 
             app.UseAntiforgery();
@@ -35,12 +50,8 @@ namespace Torres
 
             app.Run();
         }
-        //public void ConfigureServices(IServiceCollection services)
-        //{
-        //    services.AddControllers();
 
-        //    // Register the greeting service
-        //    services.AddScoped<IOrderDataAccessLayer, OrderDataAccessLayer>();
-        //}
+
+       
     }
 }

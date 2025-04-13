@@ -1,0 +1,19 @@
+﻿body {
+
+}
+
+
+.crudMessageStyle {
+    height: 40px;
+    position: fixed;
+    bottom: 29px;
+    right: -3000px;
+    z-index: 3000;
+    transition: opacity 250ms, visibility 0s;
+    transition: right 0.5s ease; /* Animation */
+}
+
+
+.crudMessageStyle.open {
+    right: 3%;
+}
